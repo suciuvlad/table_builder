@@ -30,7 +30,7 @@ module CalendarHelper
             day, objects = array
 
             output << @template.tag(:tr,options,true) if (day.wday ==  @calendar.first_weekday)
-            output << @template.tag(:td,td_options(day, id_pattern, (objects.empty? ? nil: activity_class)), true)
+            output << @template.tag(:td,td_options(day, id_pattern, objects), true)
             output << @template.with_output_buffer{block.call(day, objects)}
             output << '</td>'
             output << '</tr>' if (day.wday ==  @calendar.last_weekday)
@@ -44,20 +44,17 @@ module CalendarHelper
       @calendar.objects_for_days(@objects)
     end
     
-    def td_options(day, id_pattern, activity_class)
+    def td_options(day, id_pattern, objects)
       options = {}
-      if(day.strftime("%Y-%m-%d") ==  @today.strftime("%Y-%m-%d"))
-        options[:class] = 'today'
-      elsif(day.month != @calendar.month)
-        options[:class] = 'notmonth'
-      elsif(day.wday == 0 or day.wday == 6)
-        options[:class] = 'weekend'
-      elsif activity_class
-        options[:class] = activity_class
-      end
-      if id_pattern
-        options[:id] = day.strftime(id_pattern)
-      end
+      
+      css = []
+      css << 'today' if day.strftime("%Y-%m-%d") ==  @today.strftime("%Y-%m-%d")
+      css << 'notmonth' if day.month != @calendar.month
+      css << 'weekend' if day.wday == 0 or day.wday == 6
+      css << 'empty' if objects.empty?
+      
+      options[:id] = day.strftime(id_pattern) if id_pattern
+      options[:class] = css.join(' ') unless css.empty?
       
       options
     end
